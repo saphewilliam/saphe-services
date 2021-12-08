@@ -1,0 +1,9 @@
+# Compiled output
+node_modules/
+.saphe/
+
+# Logs
+*.log
+
+# Sensitive data
+.env

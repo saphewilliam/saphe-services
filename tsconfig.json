@@ -1,0 +1,38 @@
+{
+  "compilerOptions": {
+    "outDir": ".saphe",
+    "rootDir": "src",
+    "baseUrl": ".",
+    "esModuleInterop": true,
+    "lib": ["ESNext"],
+    "strict": true,
+    "target": "ES6",
+    "module": "CommonJS",
+    "sourceMap": true,
+    "importHelpers": true,
+    "strictNullChecks": true,
+    "allowJs": false,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noUncheckedIndexedAccess": true,
+    "allowSyntheticDefaultImports": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "noImplicitReturns": true,
+    "alwaysStrict": true,
+    "strictBindCallApply": true,
+    "strictFunctionTypes": true,
+    "noUnusedParameters": false,
+    "noUnusedLocals": false,
+    "noFallthroughCasesInSwitch": true,
+    "removeComments": true,
+    "noResolve": false,
+    "moduleResolution": "node",    
+    "paths": {
+      "@example/*": ["src/example/*"],
+    }
+  },
+  "include": ["src/**/*"]
+}
