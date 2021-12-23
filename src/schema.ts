@@ -1,9 +1,12 @@
 import { fieldAuthorizePlugin, makeSchema, queryComplexityPlugin } from 'nexus';
+import NexusPrismaScalars from 'nexus-prisma/scalars';
 import { FieldAuthorizePluginErrorConfig } from 'nexus/dist/plugins/fieldAuthorizePlugin';
 import { join } from 'path';
+import * as authTypes from './auth';
+import * as coreTypes from './core';
 
 export const schema = makeSchema({
-  types: [],
+  types: [NexusPrismaScalars, authTypes, coreTypes],
   plugins: [
     fieldAuthorizePlugin({
       formatError: ({ error }: FieldAuthorizePluginErrorConfig): Error =>

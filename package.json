@@ -19,6 +19,10 @@
     "generate:prisma": "prisma generate",
     "generate:nexus": "ts-node --transpile-only src/schema",
     "generate": "yarn generate:prisma && yarn generate:nexus",
+    "db:flush": "yarn tsn --files src/graphql/flush",
+    "db:seed": "yarn tsn --files src/graphql/seed",
+    "db:reset": "yarn db:flush && yarn db:seed",
+    "tsn": "ts-node -T -r tsconfig-paths/register -r dotenv/config -O \"{\\\"module\\\":\\\"commonjs\\\"}\"",
     "postinstall": "yarn generate"
   },
   "dependencies": {
@@ -27,7 +31,8 @@
     "graphql": "<16.0.0",
     "graphql-scalars": "1.14.1",
     "nanoid": "3.1.30",
-    "nexus": "1.1.0"
+    "nexus": "1.1.0",
+    "nexus-prisma": "0.34.0"
   },
   "devDependencies": {
     "@types/node": "16.11.12",

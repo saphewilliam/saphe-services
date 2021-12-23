@@ -2,6 +2,100 @@
 ### Do not make changes to this file directly
 
 
-type Query {
+type AccessToken {
+  createdAt: DateTime!
+  expiresAt: DateTime!
+  id: ID!
+  session: Session!
+  updatedAt: DateTime!
+  value: String!
+}
+
+"""OAuth2.0 provided user account data"""
+type Account {
+  id: ID!
+}
+
+"""
+Web entity or Application which is registered to use some or all services
+"""
+type App {
+  clientId: String!
+  clientSecret: String!
+  id: String!
+  name: String!
+}
+
+type AuthMutation {
   ok: Boolean!
+}
+
+type AuthQuery {
+  ok: Boolean!
+}
+
+"""
+The `BigInt` scalar type represents non-fractional signed whole numeric values.
+@see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt
+"""
+scalar BigInt
+
+"""The `Byte` scalar type represents byte value as a Buffer"""
+scalar Bytes
+
+type CoreMutation {
+  ok: Boolean!
+}
+
+type CoreQuery {
+  ok: Boolean!
+}
+
+"""
+A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `date-time` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
+"""
+scalar DateTime
+
+"""An arbitrary-precision Decimal type"""
+scalar Decimal
+
+type EmailVerificationToken {
+  createdAt: DateTime!
+  expiresAt: DateTime!
+  id: ID!
+  updatedAt: DateTime!
+  user: User!
+  value: String!
+}
+
+"""
+The `JSONObject` scalar type represents JSON objects as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+"""
+scalar Json @specifiedBy(url: "http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf")
+
+type Mutation {
+  auth: AuthMutation!
+  core: CoreMutation!
+}
+
+type Query {
+  auth: AuthQuery!
+  core: CoreQuery!
+}
+
+type RefreshToken {
+  createdAt: DateTime!
+  expiresAt: DateTime!
+  id: ID!
+  session: Session!
+  updatedAt: DateTime!
+  value: String!
+}
+
+type Session {
+  id: ID!
+}
+
+type User {
+  id: ID!
 }
