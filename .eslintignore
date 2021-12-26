@@ -1,6 +1,6 @@
 node_modules/
+coverage/
 .saphe/
-coverage
-src/graphql/generated
-.env.development
-.env.test
+.vscode/
+.env*
+*.log

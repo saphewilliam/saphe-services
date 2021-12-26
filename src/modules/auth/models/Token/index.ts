@@ -1,5 +1,9 @@
 import { objectType } from 'nexus';
-import { AccessToken, RefreshToken, EmailVerificationToken } from 'nexus-prisma';
+import {
+  AccessToken,
+  RefreshToken,
+  EmailVerificationToken,
+} from 'nexus-prisma';
 
 export const AccessTokenModel = objectType({
   name: AccessToken.$name,

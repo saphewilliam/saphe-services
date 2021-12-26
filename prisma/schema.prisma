@@ -8,11 +8,14 @@ generator client {
 }
 
 generator nexusPrisma {
-   provider = "nexus-prisma"
+  provider = "nexus-prisma"
 }
 
-// Core
+// ------------------------ //
+//           Core           //
+// ------------------------ //
 
+/// Web entity or Application registered to use some or all services
 model App {
   id           String   @id @default(uuid())
   createdAt    DateTime @default(now())
@@ -37,7 +40,9 @@ model Visitor {
   app   App    @relation(fields: [appId], references: [id], onDelete: Cascade)
 }
 
-// Auth
+// ------------------------ //
+//           Auth           //
+// ------------------------ //
 
 /// Configuration object for the Auth module
 model AuthConfig {

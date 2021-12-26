@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "outDir": ".saphe",
+    "noEmit": true,
     "rootDir": "src",
     "baseUrl": ".",
     "esModuleInterop": true,
@@ -31,11 +31,9 @@
     "noResolve": false,
     "moduleResolution": "node",    
     "paths": {
-      "@example/*": ["src/example/*"],
+      "@lib/*": ["src/lib/*"],
     },
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
   },
-  "exclude": ["node_modules", ".saphe", "coverage"],
-  "include": ["src", "__tests__"]
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules"],
 }
