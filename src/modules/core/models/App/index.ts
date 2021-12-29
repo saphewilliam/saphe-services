@@ -1,7 +1,7 @@
 import { objectType } from 'nexus';
 import { App } from 'nexus-prisma';
 
-export const appModel = objectType({
+export const AppModel = objectType({
   name: App.$name,
   description: App.$description,
   definition(t) {

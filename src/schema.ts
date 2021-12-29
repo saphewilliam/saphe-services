@@ -1,4 +1,5 @@
 import { fieldAuthorizePlugin, makeSchema, queryComplexityPlugin } from 'nexus';
+// eslint-disable-next-line import/no-unresolved
 import NexusPrismaScalars from 'nexus-prisma/scalars';
 import { FieldAuthorizePluginErrorConfig } from 'nexus/dist/plugins/fieldAuthorizePlugin';
 import { join } from 'path';

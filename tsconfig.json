@@ -31,7 +31,10 @@
     "noResolve": false,
     "moduleResolution": "node",    
     "paths": {
-      "@lib/*": ["src/lib/*"],
+      "@auth": ["src/modules/auth"],
+      "@auth/*": ["src/modules/auth/*"],
+      "@core": ["src/modules/core"],
+      "@core/*": ["src/modules/core/*"],
     },
   },
   "include": ["**/*.ts"],

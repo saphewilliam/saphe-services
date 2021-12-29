@@ -1,6 +1,6 @@
-import { environment } from '@lib/environment';
 import { ApolloServer } from 'apollo-server';
 import { createContext } from './context';
+import { environment } from './environment';
 import { schema } from './schema';
 
 const server = new ApolloServer({

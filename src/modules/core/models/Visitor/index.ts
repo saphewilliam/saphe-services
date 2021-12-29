@@ -1,7 +1,7 @@
 import { objectType } from 'nexus';
 import { Visitor } from 'nexus-prisma';
 
-export const visitorModel = objectType({
+export const VisitorModel = objectType({
   name: Visitor.$name,
   description: Visitor.$description,
   definition(t) {

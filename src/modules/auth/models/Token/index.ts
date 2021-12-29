@@ -5,6 +5,25 @@ import {
   EmailVerificationToken,
 } from 'nexus-prisma';
 
+export const TokenPayloadModel = objectType({
+  name: 'TokenPayload',
+  description: 'The payload returned when initiating or refreshing a session',
+  definition(t) {
+    t.string('access', {
+      description: 'Token used to authenticate user against this api',
+    });
+    t.dateTime('accessExpiresAt', {
+      description: 'After this date, the access token is no longer valid',
+    });
+    t.string('refresh', {
+      description: 'Token used to refresh an expired access token',
+    });
+    t.dateTime('refreshExpiresAt', {
+      description: 'After this date, the refresh token is no longer valid',
+    });
+  },
+});
+
 export const AccessTokenModel = objectType({
   name: AccessToken.$name,
   description: AccessToken.$description,

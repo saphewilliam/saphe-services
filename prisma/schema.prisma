@@ -30,6 +30,7 @@ model App {
   authConfig AuthConfig?
 }
 
+/// Client who visited the app, either authenticated or unauthenticated
 model Visitor {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
@@ -94,6 +95,15 @@ model User {
   app   App    @relation(fields: [appId], references: [id], onDelete: Cascade)
 }
 
+enum AuthProvider {
+  // APPLE
+  // DISCORD
+  EMAIL
+  // FACEBOOK
+  GOOGLE
+  INSTAGRAM
+}
+
 /// OAuth2.0 provided user account data
 model Account {
   id        String   @id @default(uuid())
@@ -102,20 +112,22 @@ model Account {
 
   // Inspired by: https://next-auth.js.org/adapters/models
   type              String
-  provider          String // TODO Providers model?
+  provider          String // TODO Providers enum?
   providerAccountId String
   refresh           String
   access            String?
-  expires           Int?
+  expiresAt         Int?
   tokenType         String?
   scope             String
   idToken           String
+  sessionState      String
   oauthTokenSecret  String
   oauthToken        String
-  sessionState      String
 
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
 }
 
 model AccessToken {
