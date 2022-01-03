@@ -15,7 +15,9 @@ export const SessionMutation = extendType({
     t.field('login', {
       type: 'Session',
       description: 'Log in a user',
-      resolve(source, args, ctx) {},
+      resolve(source, args, ctx) {
+        // TODO
+      },
     });
   },
 });

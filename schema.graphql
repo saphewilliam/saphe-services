@@ -26,6 +26,19 @@ type App {
 }
 
 """
+The parameters necessary to start an OAuth2.0 flow with an external provider
+"""
+type AuthorizeType {
+  """
+  The parameters which should be sent with the OAuth2.0 authorize request
+  """
+  parameters: Json!
+
+  """The endpoint to which an OAuth2.0 authorize request must be sent"""
+  url: String!
+}
+
+"""
 The `BigInt` scalar type represents non-fractional signed whole numeric values.
 @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt
 """
@@ -62,7 +75,8 @@ type Mutation {
 }
 
 type Query {
-  ok: Boolean!
+  """Returns the client ID for a given provider"""
+  authorize: AuthorizeType!
 }
 
 type RefreshToken {

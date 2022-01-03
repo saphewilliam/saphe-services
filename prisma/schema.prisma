@@ -56,6 +56,13 @@ model AuthConfig {
   /// The number of seconds an issued refresh token should be valid. Default = 2592000 (30 days)
   refreshExpires Int?
 
+  GithubClientId        String?
+  GithubClientSecret    String?
+  InstagramClientId     String?
+  InstagramClientSecret String?
+  FacebookClientId      String?
+  FacebookClientSecret  String?
+
   appId String @unique
   app   App    @relation(fields: [appId], references: [id], onDelete: Cascade)
 }
@@ -83,7 +90,7 @@ model User {
   email         String    @unique
   emailVerified DateTime?
   /// The ID of this user in the service consumer's system
-  ref           String    @unique
+  ref           String
   /// If a user is blocked, this field contains the reason why the user was blocked
   blocked       String?
 
@@ -93,13 +100,15 @@ model User {
 
   appId String
   app   App    @relation(fields: [appId], references: [id], onDelete: Cascade)
+
+  @@unique([appId, ref])
 }
 
 enum AuthProvider {
   // APPLE
   // DISCORD
   EMAIL
-  // FACEBOOK
+  FACEBOOK
   GOOGLE
   INSTAGRAM
 }
