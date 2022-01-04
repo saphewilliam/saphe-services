@@ -104,13 +104,13 @@ model User {
   @@unique([appId, ref])
 }
 
-enum AuthProvider {
+enum OAuthProvider {
   // APPLE
   // DISCORD
-  EMAIL
-  FACEBOOK
-  GOOGLE
-  INSTAGRAM
+  // FACEBOOK
+  GITHUB
+  // GOOGLE
+  // INSTAGRAM
 }
 
 /// OAuth2.0 provided user account data
@@ -121,7 +121,7 @@ model Account {
 
   // Inspired by: https://next-auth.js.org/adapters/models
   type              String
-  provider          String // TODO Providers enum?
+  provider          OAuthProvider // TODO Providers enum?
   providerAccountId String
   refresh           String
   access            String?

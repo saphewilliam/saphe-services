@@ -29,10 +29,7 @@ type App {
 The parameters necessary to start an OAuth2.0 flow with an external provider
 """
 type AuthorizeType {
-  """
-  The parameters which should be sent with the OAuth2.0 authorize request
-  """
-  parameters: Json!
+  state: Json
 
   """The endpoint to which an OAuth2.0 authorize request must be sent"""
   url: String!
@@ -74,9 +71,22 @@ type Mutation {
   login: Session!
 }
 
+enum OAuthProvider {
+  DISCORD
+  FACEBOOK
+  GITHUB
+  GOOGLE
+  INSTAGRAM
+}
+
 type Query {
-  """Returns the client ID for a given provider"""
-  authorize: AuthorizeType!
+  """
+  Get all information required to send an authorization request from the client
+  """
+  authorize(
+    """Provider you wish to request authorization from"""
+    provider: OAuthProvider!
+  ): AuthorizeType!
 }
 
 type RefreshToken {

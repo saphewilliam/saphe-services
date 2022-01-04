@@ -1,6 +1,9 @@
 import { extendType, objectType, arg } from 'nexus';
+import { generators } from 'openid-client';
+import { providers } from './lib/providers';
 
 export * from './models/Account';
+export * from './models/Provider';
 export * from './models/Session';
 export * from './models/Token';
 export * from './models/User';
@@ -13,13 +16,6 @@ export const AuthorizeTypeModel = objectType({
     t.string('url', {
       description:
         'The endpoint to which an OAuth2.0 authorize request must be sent',
-      resolve() {
-        //TODO
-      },
-    });
-    t.json('parameters', {
-      description:
-        'The parameters which should be sent with the OAuth2.0 authorize request',
     });
   },
 });
@@ -33,11 +29,17 @@ export const AuthQuery = extendType({
         'Get all information required to send an authorization request from the client',
       args: {
         provider: arg({
-          type: 'AuthProvider',
+          type: 'OAuthProvider',
           description: 'Provider you wish to request authorization from',
         }),
       },
-      resolve() {
+      resolve(_root, args) {
+        const provider = providers[args.provider];
+        const state = generators.state();
+
+        return {
+          url: provider.authorization,
+        };
         // TODO
       },
     });
