@@ -56,12 +56,18 @@ model AuthConfig {
   /// The number of seconds an issued refresh token should be valid. Default = 2592000 (30 days)
   refreshExpires Int?
 
-  GithubClientId        String?
-  GithubClientSecret    String?
-  InstagramClientId     String?
-  InstagramClientSecret String?
+  DiscordClientId       String?
+  DiscordClientSecret   String?
   FacebookClientId      String?
   FacebookClientSecret  String?
+  GitHubClientId        String?
+  GitHubClientSecret    String?
+  GoogleClientId        String?
+  GoogleClientSecret    String?
+  InstagramClientId     String?
+  InstagramClientSecret String?
+  TikTokClientId        String?
+  TikTokClientSecret    String?
 
   appId String @unique
   app   App    @relation(fields: [appId], references: [id], onDelete: Cascade)

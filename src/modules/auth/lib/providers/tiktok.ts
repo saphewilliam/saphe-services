@@ -20,6 +20,8 @@ interface TikTokUser {
   display_name: string;
 }
 
+// TODO https://github.com/nextauthjs/next-auth/pull/2720/files
+
 export const TikTok: OAuthConfig<TikTokToken, TikTokUser> = (options) => ({
   key: OAuthProvider.TIKTOK,
   name: 'TikTok',

@@ -1,14 +1,17 @@
 /* eslint-disable no-console */
 
 import { PrismaClient } from '@prisma/client';
-// import { idMap } from './idMap';
-// import seedUsers from './auth/User/seed';
+import { authSeed } from '@auth/seed';
+import { coreSeed } from '@core/seed';
 
 const prisma = new PrismaClient();
 
-async function seed(_prisma: PrismaClient): Promise<void> {
-  console.log('Seeding Users...');
-  // await seedUsers(prisma);
+async function seed(prisma: PrismaClient): Promise<void> {
+  console.log('Seeding Core...');
+  await coreSeed(prisma);
+
+  console.log('Seeding Auth...');
+  await authSeed(prisma);
 }
 
 seed(prisma)

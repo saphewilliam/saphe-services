@@ -32,9 +32,6 @@ export const Google: OAuthConfig<GoogleToken, GoogleUser> = () => ({
   },
   token: {
     url: 'https://accounts.google.com/o/oauth2/token',
-    params: {
-      grant_type: 'authorization_code',
-    },
   },
   user: {
     url: 'https://www.googleapis.com/oauth2/v3/userinfo',

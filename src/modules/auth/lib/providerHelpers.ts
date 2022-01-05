@@ -8,6 +8,7 @@ export enum Check {
   NONE = 'NONE',
 }
 
+// TODO rethink structure
 interface Profile {
   id: string;
   name: string | null;
@@ -15,10 +16,20 @@ interface Profile {
   image: string | null;
 }
 
-interface URL {
+interface Handler<Context, Return> extends Endpoint {
+  /** Optionally configure the request from scratch */
+  request?: (context: Context /*& {client}*/) => Awaitable<Return>;
+}
+
+// TODO document which params are added automatically
+interface Endpoint {
+  /** URL to be requested (excluding any URL parameters) */
   url: string;
+  /** Optional object with request parameters */
   params?: Record<string, string>;
 }
+
+// type UserRequest<T> = { url: string; params?: Record<string, string>, request:  };
 
 export type OAuthConfig<ProviderToken, ProviderProfile> = (options: {
   clientId: string;
@@ -27,9 +38,9 @@ export type OAuthConfig<ProviderToken, ProviderProfile> = (options: {
 }) => {
   key: OAuthProvider;
   name: string;
-  authorization: URL;
-  token: URL;
-  user: URL;
+  authorization: Endpoint;
+  token: Handler<{ params: { code: string; pkce?: string } }, ProviderToken>;
+  user: Handler<{ token: ProviderToken }, ProviderProfile>;
   check: Check;
   profile: (profile: ProviderProfile) => Awaitable<Profile>;
 };

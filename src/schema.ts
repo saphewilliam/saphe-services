@@ -3,15 +3,18 @@ import { fieldAuthorizePlugin, makeSchema, queryComplexityPlugin } from 'nexus';
 import NexusPrismaScalars from 'nexus-prisma/scalars';
 import { FieldAuthorizePluginErrorConfig } from 'nexus/dist/plugins/fieldAuthorizePlugin';
 import { join } from 'path';
-import * as types from './modules';
+import * as modules from './modules';
 
 export const schema = makeSchema({
-  types: [NexusPrismaScalars, types],
+  types: [NexusPrismaScalars, modules],
   plugins: [
     fieldAuthorizePlugin({
       formatError: ({ error }: FieldAuthorizePluginErrorConfig): Error =>
         error ?? new Error('Not authorized'),
     }),
+    // TODO configure query complexity
+    // https://shopify.engineering/rate-limiting-graphql-apis-calculating-query-complexity
+    // https://github.com/slicknode/graphql-query-complexity
     queryComplexityPlugin(),
   ],
   outputs: {
