@@ -106,11 +106,12 @@ model User {
 
 enum OAuthProvider {
   // APPLE
-  // DISCORD
-  // FACEBOOK
+  DISCORD
+  FACEBOOK
   GITHUB
-  // GOOGLE
-  // INSTAGRAM
+  GOOGLE
+  INSTAGRAM
+  TIKTOK
 }
 
 /// OAuth2.0 provided user account data

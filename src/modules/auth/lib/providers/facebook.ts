@@ -1,33 +1,53 @@
 import { OAuthProvider } from '@prisma/client';
-import { OAuthConfig } from '.';
+import { Check, OAuthConfig } from '../providerHelpers';
 
-interface FacebookProfile {
-  id: string;
-  picture: { data: { url: string } };
+interface FacebookToken {
+  access_token: string;
+  token_type: string;
+  expires_in: number;
 }
 
-export const Facebook: OAuthConfig<FacebookProfile> = {
+interface FacebookUser {
+  id: string;
+  name: string;
+  email: string;
+  picture: {
+    data: {
+      height: number;
+      is_silhouette: boolean;
+      url: string;
+      width: number;
+    };
+  };
+}
+
+// https://developers.facebook.com/docs/facebook-login/manually-build-a-login-flow/
+
+export const Facebook: OAuthConfig<FacebookToken, FacebookUser> = () => ({
   key: OAuthProvider.FACEBOOK,
   name: 'Facebook',
-  authorization: 'https://www.facebook.com/v11.0/dialog/oauth?scope=email',
-  token: 'https://graph.facebook.com/oauth/access_token',
-  userinfo: {
-    url: 'https://graph.facebook.com/me',
-    // https://developers.facebook.com/docs/graph-api/reference/user/#fields
-    params: { fields: 'id,name,email,picture' },
-    async request({ tokens, client, provider }) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      return await client.userinfo(tokens.access_token!, {
-        params: provider.userinfo?.params,
-      });
+  check: Check.STATE,
+  authorization: {
+    url: 'https://www.facebook.com/v12.0/dialog/oauth',
+    params: {
+      scope: 'email,public_profile',
     },
   },
-  profile(profile) {
+  token: {
+    url: 'https://graph.facebook.com/oauth/access_token',
+  },
+  user: {
+    url: 'https://graph.facebook.com/me',
+    params: {
+      fields: 'id,name,email,picture',
+    },
+  },
+  profile(user) {
     return {
-      id: profile.id,
-      name: profile.name,
-      email: profile.email,
-      image: profile.picture.data.url,
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      image: user.picture.data.url,
     };
   },
-};
+});

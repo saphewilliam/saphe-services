@@ -29,7 +29,11 @@ type App {
 The parameters necessary to start an OAuth2.0 flow with an external provider
 """
 type AuthorizeType {
-  state: Json
+  """PKCE verifier generated for this request (save as cookie)"""
+  pkce: String
+
+  """State generated for this request (save as cookie)"""
+  state: String
 
   """The endpoint to which an OAuth2.0 authorize request must be sent"""
   url: String!
@@ -68,7 +72,25 @@ scalar Json @specifiedBy(url: "http://www.ecma-international.org/publications/fi
 
 type Mutation {
   """Log in a user"""
-  login: Session!
+  login(
+    """Code received from provider to log in"""
+    code: String!
+
+    """Expected state (from cookie)"""
+    expectedState: String
+
+    """PKCE verifier token"""
+    pkce: String
+
+    """Provider you used to log in with"""
+    provider: OAuthProvider!
+
+    """Uri where the user should be redirected to"""
+    redirectUri: String!
+
+    """Actual state (from callback url parameters)"""
+    state: String
+  ): Json!
 }
 
 enum OAuthProvider {
@@ -77,15 +99,17 @@ enum OAuthProvider {
   GITHUB
   GOOGLE
   INSTAGRAM
+  TIKTOK
 }
 
 type Query {
-  """
-  Get all information required to send an authorization request from the client
-  """
+  """Get the information to send an authorization request from the client"""
   authorize(
     """Provider you wish to request authorization from"""
     provider: OAuthProvider!
+
+    """Url to where the user should be redirected after authorizing"""
+    redirectUri: String!
   ): AuthorizeType!
 }
 

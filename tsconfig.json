@@ -4,7 +4,7 @@
     "rootDir": "src",
     "baseUrl": ".",
     "esModuleInterop": true,
-    "lib": ["ESNext"],
+    "lib": ["ESNext", "DOM"],
     "strict": true,
     "target": "ES6",
     "module": "CommonJS",
