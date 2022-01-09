@@ -1,4 +1,5 @@
 import { OAuthProvider } from '@prisma/client';
+import { AxiosResponse } from 'axios';
 import { Awaitable } from '@lib/helperTypes';
 
 export enum Check {
@@ -16,31 +17,38 @@ interface Profile {
   image: string | null;
 }
 
-interface Handler<Context, Return> extends Endpoint {
+type Params = Record<string, string | string[]>;
+
+interface EndpointHandler<Context, Return> extends Endpoint<Context> {
   /** Optionally configure the request from scratch */
-  request?: (context: Context /*& {client}*/) => Awaitable<Return>;
+  request?: (
+    context: Context & { url: URL; params: Params },
+  ) => Awaitable<AxiosResponse>;
+  /** Optionally extract the required data from the raw response */
+  data?: (response: AxiosResponse) => Awaitable<Return>;
 }
 
 // TODO document which params are added automatically
-interface Endpoint {
+interface Endpoint<Context> {
   /** URL to be requested (excluding any URL parameters) */
   url: string;
   /** Optional object with request parameters */
-  params?: Record<string, string>;
+  params?: (context: Context) => Params;
 }
 
-// type UserRequest<T> = { url: string; params?: Record<string, string>, request:  };
-
-export type OAuthConfig<ProviderToken, ProviderProfile> = (options: {
+export type OAuthConfig<ProviderToken, ProviderUser> = (options: {
   clientId: string;
   clientSecret: string;
   redirectUri: string;
 }) => {
   key: OAuthProvider;
   name: string;
-  authorization: Endpoint;
-  token: Handler<{ params: { code: string; pkce?: string } }, ProviderToken>;
-  user: Handler<{ token: ProviderToken }, ProviderProfile>;
   check: Check;
-  profile: (profile: ProviderProfile) => Awaitable<Profile>;
+  authorization: Endpoint<Record<string, never>>;
+  token: EndpointHandler<
+    { callbackParams: { code: string; pkce?: string | null } },
+    ProviderToken
+  >;
+  user: EndpointHandler<{ token: ProviderToken }, ProviderUser>;
+  profile: (profile: ProviderUser) => Awaitable<Profile>;
 };

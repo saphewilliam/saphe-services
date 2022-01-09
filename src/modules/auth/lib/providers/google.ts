@@ -26,9 +26,7 @@ export const Google: OAuthConfig<GoogleToken, GoogleUser> = () => ({
   check: Check.BOTH,
   authorization: {
     url: 'https://accounts.google.com/o/oauth2/auth',
-    params: {
-      scope: 'email profile',
-    },
+    params: () => ({ scope: 'email profile' }),
   },
   token: {
     url: 'https://accounts.google.com/o/oauth2/token',

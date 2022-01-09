@@ -32,9 +32,7 @@ export const Discord: OAuthConfig<DiscordToken, DiscordUser> = () => ({
   // https://discord.com/developers/docs/topics/oauth2#authorization-code-grant
   authorization: {
     url: 'https://discord.com/api/oauth2/authorize',
-    params: {
-      scope: 'identify email',
-    },
+    params: () => ({ scope: 'identify email' }),
   },
   token: {
     url: 'https://discord.com/api/oauth2/token',

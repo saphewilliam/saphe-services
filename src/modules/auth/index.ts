@@ -1,4 +1,4 @@
-import fetch from 'cross-fetch';
+import axios, { AxiosResponse } from 'axios';
 import { extendType, arg, stringArg, objectType, nullable } from 'nexus';
 import pkceChallenge from 'pkce-challenge';
 import { Check } from './lib/providerHelpers';
@@ -62,7 +62,9 @@ export const AuthQuery = extendType({
         });
 
         const authorizeUrl = new URL(provider.authorization.url);
-        const params = provider.authorization.params ?? {};
+        const params = provider.authorization.params
+          ? provider.authorization.params({})
+          : {};
 
         params['client_id'] = clientId;
         params['redirect_uri'] = redirectUri;
@@ -82,9 +84,11 @@ export const AuthQuery = extendType({
           params['code_challenge'] = code_challenge;
         }
 
-        Object.entries(params).map(([key, value]) =>
-          authorizeUrl.searchParams.set(key, value),
-        );
+        Object.entries(params).map(([key, value]) => {
+          if (typeof value == 'object')
+            for (const str of value) authorizeUrl.searchParams.append(key, str);
+          else authorizeUrl.searchParams.append(key, value);
+        });
 
         return {
           url: authorizeUrl.toString(),
@@ -144,7 +148,11 @@ export const AuthMutation = extendType({
         });
 
         const tokenUrl = new URL(provider.token.url);
-        const tokenParams = provider.token.params ?? {};
+        const tokenParams = provider.token.params
+          ? provider.token.params({
+              callbackParams: { code, pkce: args.pkce },
+            })
+          : {};
 
         tokenParams['client_id'] = clientId;
         tokenParams['client_secret'] = clientSecret;
@@ -167,43 +175,70 @@ export const AuthMutation = extendType({
         }
 
         Object.entries(tokenParams).map(([key, value]) => {
-          tokenUrl.searchParams.set(key, value);
+          if (typeof value == 'object')
+            for (const str of value) tokenUrl.searchParams.append(key, str);
+          else tokenUrl.searchParams.append(key, value);
         });
 
-        const tokenResponse = await fetch(tokenUrl.toString(), {
-          method: 'POST',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-          body: tokenUrl.searchParams.toString(),
-        });
-        const tokenData = (await tokenResponse.json()) as {
-          access_token: string;
-          token_type?: string;
-        };
+        let tokenResponse: AxiosResponse;
+        if (provider.token.request)
+          tokenResponse = await provider.token.request({
+            callbackParams: { code, pkce: args.pkce },
+            url: tokenUrl,
+            params: tokenParams,
+          });
+        else
+          tokenResponse = await axios({
+            method: 'POST',
+            url: tokenUrl.toString(),
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            data: tokenUrl.searchParams.toString(),
+          });
 
-        // console.log(tokenData);
+        let tokenData: { access_token: string };
+        if (provider.token.data)
+          tokenData = await provider.token.data(tokenResponse);
+        else tokenData = await tokenResponse.data;
 
         const userUrl = new URL(provider.user.url);
-        const userParams = provider.user.params ?? {};
+        const userParams = provider.user.params
+          ? provider.user.params({ token: tokenData })
+          : {};
 
         userParams['access_token'] = tokenData.access_token;
 
-        Object.entries(userParams).map(([key, value]) =>
-          userUrl.searchParams.set(key, value),
-        );
-
-        const userResponse = await fetch(userUrl.toString(), {
-          headers: {
-            Accept: 'application/json',
-            Authorization: `${tokenData.token_type ?? 'Bearer'} ${
-              tokenData.access_token
-            }`,
-          },
+        Object.entries(userParams).map(([key, value]) => {
+          if (typeof value == 'object')
+            for (const str of value) userUrl.searchParams.append(key, str);
+          else userUrl.searchParams.append(key, value);
         });
-        const userData = await userResponse.json();
 
+        let userResponse: AxiosResponse;
+        if (provider.user.request)
+          userResponse = await provider.user.request({
+            token: tokenData,
+            url: userUrl,
+            params: userParams,
+          });
+        else
+          userResponse = await axios({
+            method: 'GET',
+            url: userUrl.toString(),
+            headers: {
+              Accept: 'application/json',
+              Authorization: `Bearer ${tokenData.access_token}`,
+            },
+          });
+
+        let userData;
+        if (provider.user.data)
+          userData = await provider.user.data(userResponse);
+        else userData = await userResponse.data;
+
+        // return provider.profile(userData);
         return userData;
       },
     });

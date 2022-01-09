@@ -19,9 +19,7 @@ export const Instagram: OAuthConfig<InstagramToken, InstagramUser> = () => ({
   // https://developers.facebook.com/docs/instagram-basic-display-api/reference/oauth-authorize
   authorization: {
     url: 'https://api.instagram.com/oauth/authorize',
-    params: {
-      scope: 'user_profile',
-    },
+    params: () => ({ scope: 'user_profile' }),
   },
   // https://developers.facebook.com/docs/instagram-basic-display-api/reference/oauth-access-token
   token: {
@@ -30,9 +28,7 @@ export const Instagram: OAuthConfig<InstagramToken, InstagramUser> = () => ({
   // https://developers.facebook.com/docs/instagram-basic-display-api/reference/me
   user: {
     url: 'https://graph.instagram.com/me',
-    params: {
-      fields: 'id,username,account_type,name',
-    },
+    params: () => ({ fields: 'id,username,account_type,name' }),
   },
   profile(user) {
     return {

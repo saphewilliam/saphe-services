@@ -29,18 +29,14 @@ export const Facebook: OAuthConfig<FacebookToken, FacebookUser> = () => ({
   check: Check.STATE,
   authorization: {
     url: 'https://www.facebook.com/v12.0/dialog/oauth',
-    params: {
-      scope: 'email,public_profile',
-    },
+    params: () => ({ scope: 'email,public_profile' }),
   },
   token: {
     url: 'https://graph.facebook.com/oauth/access_token',
   },
   user: {
     url: 'https://graph.facebook.com/me',
-    params: {
-      fields: 'id,name,email,picture',
-    },
+    params: () => ({ fields: 'id,name,email,picture' }),
   },
   profile(user) {
     return {

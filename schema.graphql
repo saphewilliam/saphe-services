@@ -18,11 +18,11 @@ type Account {
 
 """Web entity or Application registered to use some or all services"""
 type App {
+  clientId: String!
   createdAt: DateTime!
   id: ID!
   name: String!
   updatedAt: DateTime!
-  visitors: [Visitor!]!
 }
 
 """

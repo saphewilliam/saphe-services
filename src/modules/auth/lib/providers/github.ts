@@ -49,9 +49,7 @@ export const GitHub: OAuthConfig<GitHubToken, GitHubUser> = () => ({
   // https://docs.github.com/en/developers/apps/building-oauth-apps/authorizing-oauth-apps#1-request-a-users-github-identity
   authorization: {
     url: 'https://github.com/login/oauth/authorize',
-    params: {
-      scope: 'read:user+user:email',
-    },
+    params: () => ({ scope: 'read:user+user:email' }),
   },
   // https://docs.github.com/en/developers/apps/building-oauth-apps/authorizing-oauth-apps#2-users-are-redirected-back-to-your-site-by-github
   token: {
