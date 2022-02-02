@@ -31,6 +31,7 @@
     "noResolve": false,
     "moduleResolution": "node",    
     "paths": {
+      "@src/*": ["src/*"],
       "@lib/*": ["src/lib/*"],
       "@auth": ["src/modules/auth"],
       "@auth/*": ["src/modules/auth/*"],

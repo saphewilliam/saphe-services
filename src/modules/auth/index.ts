@@ -1,10 +1,8 @@
-import axios, { AxiosResponse } from 'axios';
-import { extendType, arg, stringArg, objectType, nullable } from 'nexus';
+import { extendType, arg, stringArg, objectType } from 'nexus';
 import pkceChallenge from 'pkce-challenge';
+import { getProvider, makeProviderUrl } from './lib/authHelpers';
 import { Check } from './lib/providerHelpers';
-import { providers } from './lib/providers';
 
-export * from './models/Account';
 export * from './models/Provider';
 export * from './models/Session';
 export * from './models/Token';
@@ -15,9 +13,6 @@ export const AuthorizeTypeModel = objectType({
   description:
     'The parameters necessary to start an OAuth2.0 flow with an external provider',
   definition(t) {
-    // t.string('provider', {
-    //   description: 'The provider associated with these values',
-    // });
     t.string('url', {
       description:
         'The endpoint to which an OAuth2.0 authorize request must be sent',
@@ -39,6 +34,9 @@ export const AuthQuery = extendType({
       description:
         'Get the information to send an authorization request from the client',
       args: {
+        appId: stringArg({
+          description: 'The ID of the application the user would like to enter',
+        }),
         provider: arg({
           type: 'OAuthProvider',
           description: 'Provider you wish to request authorization from',
@@ -48,198 +46,80 @@ export const AuthQuery = extendType({
             'Url to where the user should be redirected after authorizing',
         }),
       },
-      async resolve(_root, args) {
-        // TODO fetch client_id & client_secret from database and validate their existence
-        const clientId =
-          process.env[`${args.provider}_CLIENT_ID`] ?? 'NO_CLIENT_ID';
-        const clientSecret =
-          process.env[`${args.provider}_CLIENT_SECRET`] ?? 'NO_CLIENT_SECRET';
-        const { redirectUri } = args;
-        const provider = providers[args.provider]({
-          clientId,
-          clientSecret,
-          redirectUri,
-        });
-
-        const authorizeUrl = new URL(provider.authorization.url);
-        const params = provider.authorization.params
-          ? provider.authorization.params({})
-          : {};
-
-        params['client_id'] = clientId;
-        params['redirect_uri'] = redirectUri;
-        params['response_type'] = 'code';
+      async resolve(_root, args, ctx) {
+        const p = await getProvider(ctx, args);
+        const { provider, clientId } = p;
 
         let state: string | null = null;
-        if (provider.check === Check.STATE || provider.check === Check.BOTH) {
-          state = `${Math.random() * 1117878}`;
-          params['state'] = state;
-        }
-
         let pkce: string | null = null;
-        if (provider.check === Check.PKCE || provider.check === Check.BOTH) {
-          const { code_challenge, code_verifier } = pkceChallenge();
-          pkce = code_verifier;
-          params['code_challenge_method'] = 'S256';
-          params['code_challenge'] = code_challenge;
-        }
+        const [authorizeUrl] = makeProviderUrl(
+          provider.authorization.url,
+          () => {
+            const params = provider.authorization.params
+              ? provider.authorization.params({})
+              : {};
 
-        Object.entries(params).map(([key, value]) => {
-          if (typeof value == 'object')
-            for (const str of value) authorizeUrl.searchParams.append(key, str);
-          else authorizeUrl.searchParams.append(key, value);
-        });
+            params['client_id'] = clientId;
+            params['redirect_uri'] = args.redirectUri;
+            params['response_type'] = 'code';
+
+            if (
+              provider.check === Check.STATE ||
+              provider.check === Check.BOTH
+            ) {
+              state = `${Math.random() * 1117878}`;
+              params['state'] = state;
+            }
+
+            if (
+              provider.check === Check.PKCE ||
+              provider.check === Check.BOTH
+            ) {
+              const { code_challenge, code_verifier } = pkceChallenge();
+              pkce = code_verifier;
+              params['code_challenge_method'] = 'S256';
+              params['code_challenge'] = code_challenge;
+            }
+
+            return params;
+          },
+        );
+
+        // TODO test code
+        // const authorizeUrl = new URL(provider.authorization.url);
+        // const params = provider.authorization.params
+        //   ? provider.authorization.params({})
+        //   : {};
+
+        // params['client_id'] = clientId;
+        // params['redirect_uri'] = args.redirectUri;
+        // params['response_type'] = 'code';
+
+        // let state: string | null = null;
+        // if (provider.check === Check.STATE || provider.check === Check.BOTH) {
+        //   state = `${Math.random() * 1117878}`;
+        //   params['state'] = state;
+        // }
+
+        // let pkce: string | null = null;
+        // if (provider.check === Check.PKCE || provider.check === Check.BOTH) {
+        //   const { code_challenge, code_verifier } = pkceChallenge();
+        //   pkce = code_verifier;
+        //   params['code_challenge_method'] = 'S256';
+        //   params['code_challenge'] = code_challenge;
+        // }
+
+        // Object.entries(params).map(([key, value]) => {
+        //   if (typeof value == 'object')
+        //     for (const str of value) authorizeUrl.searchParams.append(key, str);
+        //   else authorizeUrl.searchParams.append(key, value);
+        // });
 
         return {
           url: authorizeUrl.toString(),
           state,
           pkce,
         };
-      },
-    });
-  },
-});
-
-export const AuthMutation = extendType({
-  type: 'Mutation',
-  definition(t) {
-    t.field('login', {
-      // TODO type: 'Session',
-      type: 'Json',
-      description: 'Log in a user',
-      args: {
-        provider: arg({
-          type: 'OAuthProvider',
-          description: 'Provider you used to log in with',
-        }),
-        redirectUri: stringArg({
-          description: 'Uri where the user should be redirected to',
-        }),
-        code: stringArg({
-          description: 'Code received from provider to log in',
-        }),
-        expectedState: nullable(
-          stringArg({
-            description: 'Expected state (from cookie)',
-          }),
-        ),
-        state: nullable(
-          stringArg({
-            description: 'Actual state (from callback url parameters)',
-          }),
-        ),
-        pkce: nullable(
-          stringArg({
-            description: 'PKCE verifier token',
-          }),
-        ),
-      },
-      async resolve(_root, args) {
-        // TODO fetch client_id & client_secret from database and validate their existence
-        const clientId =
-          process.env[`${args.provider}_CLIENT_ID`] ?? 'NO_CLIENT_ID';
-        const clientSecret =
-          process.env[`${args.provider}_CLIENT_SECRET`] ?? 'NO_CLIENT_SECRET';
-        const { redirectUri, code } = args;
-        const provider = providers[args.provider]({
-          clientId,
-          clientSecret,
-          redirectUri,
-        });
-
-        const tokenUrl = new URL(provider.token.url);
-        const tokenParams = provider.token.params
-          ? provider.token.params({
-              callbackParams: { code, pkce: args.pkce },
-            })
-          : {};
-
-        tokenParams['client_id'] = clientId;
-        tokenParams['client_secret'] = clientSecret;
-        tokenParams['redirect_uri'] = redirectUri;
-        tokenParams['code'] = code;
-        tokenParams['grant_type'] = 'authorization_code';
-
-        if (provider.check === Check.STATE || provider.check === Check.BOTH) {
-          if (!args.state || !args.expectedState)
-            throw Error(
-              `Provider ${provider.name} requires both state and expectedState to be set`,
-            );
-          if (args.expectedState !== args.state) throw Error('State mismatch');
-        }
-
-        if (provider.check === Check.PKCE || provider.check === Check.BOTH) {
-          if (!args.pkce)
-            throw Error(`Provider ${provider.name} requires pkce to be set`);
-          tokenParams['code_verifier'] = args.pkce;
-        }
-
-        Object.entries(tokenParams).map(([key, value]) => {
-          if (typeof value == 'object')
-            for (const str of value) tokenUrl.searchParams.append(key, str);
-          else tokenUrl.searchParams.append(key, value);
-        });
-
-        let tokenResponse: AxiosResponse;
-        if (provider.token.request)
-          tokenResponse = await provider.token.request({
-            callbackParams: { code, pkce: args.pkce },
-            url: tokenUrl,
-            params: tokenParams,
-          });
-        else
-          tokenResponse = await axios({
-            method: 'POST',
-            url: tokenUrl.toString(),
-            headers: {
-              'Accept': 'application/json',
-              'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            data: tokenUrl.searchParams.toString(),
-          });
-
-        let tokenData: { access_token: string };
-        if (provider.token.data)
-          tokenData = await provider.token.data(tokenResponse);
-        else tokenData = await tokenResponse.data;
-
-        const userUrl = new URL(provider.user.url);
-        const userParams = provider.user.params
-          ? provider.user.params({ token: tokenData })
-          : {};
-
-        userParams['access_token'] = tokenData.access_token;
-
-        Object.entries(userParams).map(([key, value]) => {
-          if (typeof value == 'object')
-            for (const str of value) userUrl.searchParams.append(key, str);
-          else userUrl.searchParams.append(key, value);
-        });
-
-        let userResponse: AxiosResponse;
-        if (provider.user.request)
-          userResponse = await provider.user.request({
-            token: tokenData,
-            url: userUrl,
-            params: userParams,
-          });
-        else
-          userResponse = await axios({
-            method: 'GET',
-            url: userUrl.toString(),
-            headers: {
-              Accept: 'application/json',
-              Authorization: `Bearer ${tokenData.access_token}`,
-            },
-          });
-
-        let userData;
-        if (provider.user.data)
-          userData = await provider.user.data(userResponse);
-        else userData = await userResponse.data;
-
-        // return provider.profile(userData);
-        return userData;
       },
     });
   },

@@ -21,7 +21,7 @@ model App {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   name         String
-  clientId     String
+  clientId     String @unique
   clientSecret String
 
   visitors Visitor[]
@@ -56,18 +56,18 @@ model AuthConfig {
   /// The number of seconds an issued refresh token should be valid. Default = 2592000 (30 days)
   refreshExpires Int?
 
-  DiscordClientId       String?
-  DiscordClientSecret   String?
-  FacebookClientId      String?
-  FacebookClientSecret  String?
-  GitHubClientId        String?
-  GitHubClientSecret    String?
-  GoogleClientId        String?
-  GoogleClientSecret    String?
-  InstagramClientId     String?
-  InstagramClientSecret String?
-  TikTokClientId        String?
-  TikTokClientSecret    String?
+  discordClientId       String?
+  discordClientSecret   String?
+  facebookClientId      String?
+  facebookClientSecret  String?
+  gitHubClientId        String?
+  gitHubClientSecret    String?
+  googleClientId        String?
+  googleClientSecret    String?
+  instagramClientId     String?
+  instagramClientSecret String?
+  tikTokClientId        String?
+  tikTokClientSecret    String?
 
   appId String @unique
   app   App    @relation(fields: [appId], references: [id], onDelete: Cascade)
@@ -93,10 +93,13 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  email         String    @unique
+  email         String?    @unique
   emailVerified DateTime?
+  name          String?
+  image         String?
+
   /// The ID of this user in the service consumer's system
-  ref           String
+  ref           String @default(uuid())
   /// If a user is blocked, this field contains the reason why the user was blocked
   blocked       String?
 
@@ -126,19 +129,8 @@ model Account {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Inspired by: https://next-auth.js.org/adapters/models
-  type              String
-  provider          OAuthProvider // TODO Providers enum?
+  provider          OAuthProvider
   providerAccountId String
-  refresh           String
-  access            String?
-  expiresAt         Int?
-  tokenType         String?
-  scope             String
-  idToken           String
-  sessionState      String
-  oauthTokenSecret  String
-  oauthToken        String
 
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -154,7 +146,7 @@ model AccessToken {
   value     String   @unique
 
   sessionId String
-  session   Session @relation(fields: [sessionId], references: [id])
+  session   Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 }
 
 model RefreshToken {
@@ -163,9 +155,10 @@ model RefreshToken {
   updatedAt DateTime @updatedAt
   expiresAt DateTime
   value     String   @unique
+  used      Boolean @default(false)
 
   sessionId String
-  session   Session @relation(fields: [sessionId], references: [id])
+  session   Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 }
 
 model EmailVerificationToken {
@@ -176,7 +169,7 @@ model EmailVerificationToken {
   value     String   @unique
 
   userId String
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 // TODO privileges framework?

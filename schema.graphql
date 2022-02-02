@@ -11,11 +11,6 @@ type AccessToken {
   value: String!
 }
 
-"""OAuth2.0 provided user account data"""
-type Account {
-  id: ID!
-}
-
 """Web entity or Application registered to use some or all services"""
 type App {
   clientId: String!
@@ -73,6 +68,9 @@ scalar Json @specifiedBy(url: "http://www.ecma-international.org/publications/fi
 type Mutation {
   """Log in a user"""
   login(
+    """The ID of the application the user would like to enter"""
+    appId: String!
+
     """Code received from provider to log in"""
     code: String!
 
@@ -90,7 +88,16 @@ type Mutation {
 
     """Actual state (from callback url parameters)"""
     state: String
-  ): Json!
+  ): Session!
+
+  """Invalidate a session"""
+  logout: Session!
+
+  """Refresh an expired access token"""
+  refresh(
+    """The latest active refresh token associated with the session"""
+    refresh: String!
+  ): TokenPayload!
 }
 
 enum OAuthProvider {
@@ -105,6 +112,9 @@ enum OAuthProvider {
 type Query {
   """Get the information to send an authorization request from the client"""
   authorize(
+    """The ID of the application the user would like to enter"""
+    appId: String!
+
     """Provider you wish to request authorization from"""
     provider: OAuthProvider!
 
@@ -123,7 +133,13 @@ type RefreshToken {
 }
 
 type Session {
+  accessToken: AccessToken
+  createdAt: DateTime!
+  data: Json
   id: ID!
+  refreshToken: RefreshToken
+  updatedAt: DateTime!
+  user: User!
 }
 
 """The payload returned when initiating or refreshing a session"""
@@ -142,7 +158,20 @@ type TokenPayload {
 }
 
 type User {
+  """
+  If a user is blocked, this field contains the reason why the user was blocked
+  """
+  blocked: String
+  createdAt: DateTime!
+  email: String
+  emailVerified: DateTime
   id: ID!
+  image: String
+  name: String
+
+  """The ID of this user in the service consumer's system"""
+  ref: String!
+  updatedAt: DateTime!
 }
 
 """Client who visited the app, either authenticated or unauthenticated"""

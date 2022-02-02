@@ -17,7 +17,7 @@ interface Profile {
   image: string | null;
 }
 
-type Params = Record<string, string | string[]>;
+export type Params = Record<string, string | string[]>;
 
 interface EndpointHandler<Context, Return> extends Endpoint<Context> {
   /** Optionally configure the request from scratch */
@@ -50,5 +50,5 @@ export type OAuthConfig<ProviderToken, ProviderUser> = (options: {
     ProviderToken
   >;
   user: EndpointHandler<{ token: ProviderToken }, ProviderUser>;
-  profile: (profile: ProviderUser) => Awaitable<Profile>;
+  profile: (user: ProviderUser) => Awaitable<Profile>;
 };

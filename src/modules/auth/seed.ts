@@ -7,4 +7,9 @@ export async function authSeed(prisma: PrismaClient): Promise<void> {
 
 export async function authFlush(prisma: PrismaClient): Promise<void> {
   await prisma.authConfig.deleteMany();
+  // TODO why doesn't it cascade?
+  // await prisma.accessToken.deleteMany();
+  // await prisma.refreshToken.deleteMany();
+  // await prisma.emailVerificationToken.deleteMany();
+  await prisma.user.deleteMany();
 }

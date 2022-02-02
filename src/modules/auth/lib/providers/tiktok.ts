@@ -65,10 +65,10 @@ export const TikTok: OAuthConfig<TikTokToken, TikTokUser> = (options) => ({
   },
   profile(user) {
     return {
-      email: null,
-      image: user.avatar_url,
       id: user.open_id,
       name: user.display_name,
+      email: null,
+      image: user.avatar_url,
     };
   },
 });
