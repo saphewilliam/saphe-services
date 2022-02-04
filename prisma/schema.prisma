@@ -7,21 +7,169 @@ generator client {
   provider = "prisma-client-js"
 }
 
+generator nexusPrisma {
+  provider = "nexus-prisma"
+}
+
+// ------------------------ //
+//           Core           //
+// ------------------------ //
+
+/// Web entity or Application registered to use some or all services
 model App {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  name      String
-  secret    String
+  id           String   @id @default(uuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  name         String
+  clientId     String @unique
+  clientSecret String
+
+  visitors Visitor[]
+  users    User[]
 
   authConfig AuthConfig?
 }
 
+/// Client who visited the app, either authenticated or unauthenticated
+model Visitor {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  token     String   @unique
+
+  appId String
+  app   App    @relation(fields: [appId], references: [id], onDelete: Cascade)
+}
+
+// ------------------------ //
+//           Auth           //
+// ------------------------ //
+
+/// Configuration object for the Auth module
 model AuthConfig {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  /// The number of seconds an issued access token should be valid. Default = 3600 (1 hour)
+  accessExpires  Int?
+  /// The number of seconds an issued refresh token should be valid. Default = 2592000 (30 days)
+  refreshExpires Int?
+
+  discordClientId       String?
+  discordClientSecret   String?
+  facebookClientId      String?
+  facebookClientSecret  String?
+  gitHubClientId        String?
+  gitHubClientSecret    String?
+  googleClientId        String?
+  googleClientSecret    String?
+  instagramClientId     String?
+  instagramClientSecret String?
+  tikTokClientId        String?
+  tikTokClientSecret    String?
+
   appId String @unique
   app   App    @relation(fields: [appId], references: [id], onDelete: Cascade)
 }
+
+model Session {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  data      Json?
+
+  /// The access tokens associated with this session, the first of which is the current valid access token
+  accessTokens  AccessToken[]
+  /// The refresh tokens associated with this session, the first of which is the current valid refresh token
+  refreshTokens RefreshToken[]
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  email         String?    @unique
+  emailVerified DateTime?
+  name          String?
+  image         String?
+
+  /// The ID of this user in the service consumer's system
+  ref           String @default(uuid())
+  /// If a user is blocked, this field contains the reason why the user was blocked
+  blocked       String?
+
+  sessions                Session[]
+  accounts                Account[]
+  emailVerificationTokens EmailVerificationToken[]
+
+  appId String
+  app   App    @relation(fields: [appId], references: [id], onDelete: Cascade)
+
+  @@unique([appId, ref])
+}
+
+enum OAuthProvider {
+  // APPLE
+  DISCORD
+  FACEBOOK
+  GITHUB
+  GOOGLE
+  INSTAGRAM
+  TIKTOK
+}
+
+/// OAuth2.0 provided user account data
+model Account {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  provider          OAuthProvider
+  providerAccountId String
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model AccessToken {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  expiresAt DateTime
+  value     String   @unique
+
+  sessionId String
+  session   Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  expiresAt DateTime
+  value     String   @unique
+  used      Boolean @default(false)
+
+  sessionId String
+  session   Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
+
+model EmailVerificationToken {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  expiresAt DateTime
+  value     String   @unique
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// TODO privileges framework?

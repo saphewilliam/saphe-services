@@ -1,10 +1,15 @@
-# Compiled output
+# Dependencies
 node_modules/
-.saphe/
-.vscode/
 
-# Logs
-*.log
+# Compiled output
+coverage/
+.saphe/
 
 # Sensitive data
-.env
+.env*
+!.env.example
+*.log
+
+# misc
+.DS_Store
+*.pem

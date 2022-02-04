@@ -1,10 +1,10 @@
 {
   "compilerOptions": {
-    "outDir": ".saphe",
+    "noEmit": true,
     "rootDir": "src",
     "baseUrl": ".",
     "esModuleInterop": true,
-    "lib": ["ESNext"],
+    "lib": ["ESNext", "DOM"],
     "strict": true,
     "target": "ES6",
     "module": "CommonJS",
@@ -31,8 +31,14 @@
     "noResolve": false,
     "moduleResolution": "node",    
     "paths": {
-      "@example/*": ["src/example/*"],
-    }
+      "@src/*": ["src/*"],
+      "@lib/*": ["src/lib/*"],
+      "@auth": ["src/modules/auth"],
+      "@auth/*": ["src/modules/auth/*"],
+      "@core": ["src/modules/core"],
+      "@core/*": ["src/modules/core/*"],
+    },
   },
-  "include": ["src/**/*"]
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules"],
 }

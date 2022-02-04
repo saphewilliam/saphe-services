@@ -1,0 +1,23 @@
+{
+  "Saphe Nexus-Prisma Model Boilerplate": {
+    "scope": "typescript",
+    "prefix": "saphe-model",
+    "description": "Boilerplate Typescript Nexus-Prisma Model",
+    "body": [
+      "import { objectType } from 'nexus';",
+      "import { ${1:ModelName} } from 'nexus-prisma';",
+      "",
+      "export const ${1:ModelName}Model = objectType({",
+      "  name: ${1:ModelName}.$$name,",
+      "  description: ${1:ModelName}.$$description,",
+      "  definition(t) {",
+      "    t.field(${1:ModelName}.id);",
+      "    t.field(${1:ModelName}.createdAt);",
+      "    t.field(${1:ModelName}.updatedAt);",
+      "    t.field(${1:ModelName}.${2:customField});",
+      "  },",
+      "});",
+      "",
+    ]
+  }
+}
