@@ -47,79 +47,34 @@ export const AuthQuery = extendType({
         }),
       },
       async resolve(_root, args, ctx) {
-        const p = await getProvider(ctx, args);
-        const { provider, clientId } = p;
+        const { provider, clientId } = await getProvider(ctx, args);
+        const { check, authorization } = provider;
 
         let state: string | null = null;
         let pkce: string | null = null;
-        const [authorizeUrl] = makeProviderUrl(
-          provider.authorization.url,
-          () => {
-            const params = provider.authorization.params
-              ? provider.authorization.params({})
-              : {};
+        const [authorizeUrl] = makeProviderUrl(authorization.url, () => {
+          const params = authorization.params ? authorization.params({}) : {};
 
-            params['client_id'] = clientId;
-            params['redirect_uri'] = args.redirectUri;
-            params['response_type'] = 'code';
+          params['client_id'] = clientId;
+          params['redirect_uri'] = args.redirectUri;
+          params['response_type'] = 'code';
 
-            if (
-              provider.check === Check.STATE ||
-              provider.check === Check.BOTH
-            ) {
-              state = `${Math.random() * 1117878}`;
-              params['state'] = state;
-            }
+          if (check === Check.STATE || check === Check.BOTH) {
+            state = `${Math.random() * 1117878}`;
+            params['state'] = state;
+          }
 
-            if (
-              provider.check === Check.PKCE ||
-              provider.check === Check.BOTH
-            ) {
-              const { code_challenge, code_verifier } = pkceChallenge();
-              pkce = code_verifier;
-              params['code_challenge_method'] = 'S256';
-              params['code_challenge'] = code_challenge;
-            }
+          if (check === Check.PKCE || check === Check.BOTH) {
+            const { code_challenge, code_verifier } = pkceChallenge();
+            pkce = code_verifier;
+            params['code_challenge_method'] = 'S256';
+            params['code_challenge'] = code_challenge;
+          }
 
-            return params;
-          },
-        );
+          return params;
+        });
 
-        // TODO test code
-        // const authorizeUrl = new URL(provider.authorization.url);
-        // const params = provider.authorization.params
-        //   ? provider.authorization.params({})
-        //   : {};
-
-        // params['client_id'] = clientId;
-        // params['redirect_uri'] = args.redirectUri;
-        // params['response_type'] = 'code';
-
-        // let state: string | null = null;
-        // if (provider.check === Check.STATE || provider.check === Check.BOTH) {
-        //   state = `${Math.random() * 1117878}`;
-        //   params['state'] = state;
-        // }
-
-        // let pkce: string | null = null;
-        // if (provider.check === Check.PKCE || provider.check === Check.BOTH) {
-        //   const { code_challenge, code_verifier } = pkceChallenge();
-        //   pkce = code_verifier;
-        //   params['code_challenge_method'] = 'S256';
-        //   params['code_challenge'] = code_challenge;
-        // }
-
-        // Object.entries(params).map(([key, value]) => {
-        //   if (typeof value == 'object')
-        //     for (const str of value) authorizeUrl.searchParams.append(key, str);
-        //   else authorizeUrl.searchParams.append(key, value);
-        // });
-
-        return {
-          url: authorizeUrl.toString(),
-          state,
-          pkce,
-        };
+        return { url: authorizeUrl.toString(), state, pkce };
       },
     });
   },

@@ -50,7 +50,8 @@ export const TokenMutation = extendType({
           .authConfig({
             select: { accessExpires: true, refreshExpires: true },
           });
-        if (config === null) throw Error('Unknown app');
+        if (config === null)
+          throw Error(`This app is not set up to handle authentication`);
 
         // Create new set of tokens
         const accessToken = await ctx.prisma.accessToken.create({

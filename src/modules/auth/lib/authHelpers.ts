@@ -108,10 +108,14 @@ export function makeProviderUrl(
   return [url, params];
 }
 
+interface TokenData {
+  expiresAt: Date;
+  value: string;
+}
+
 export function getNewAccessToken(config: {
   accessExpires: number | null;
-  refreshExpires: number | null;
-}): { expiresAt: Date; value: string } {
+}): TokenData {
   const accessExpiresDate = new Date();
   accessExpiresDate.setSeconds(
     accessExpiresDate.getSeconds() + (config.accessExpires ?? 3600),
@@ -121,9 +125,8 @@ export function getNewAccessToken(config: {
 }
 
 export function getNewRefreshToken(config: {
-  accessExpires: number | null;
   refreshExpires: number | null;
-}): { expiresAt: Date; value: string } {
+}): TokenData {
   const refreshExpiresDate = new Date();
   refreshExpiresDate.setSeconds(
     refreshExpiresDate.getSeconds() + (config.refreshExpires ?? 2592000),

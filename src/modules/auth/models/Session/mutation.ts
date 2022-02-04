@@ -21,17 +21,11 @@ export const SessionMutation = extendType({
         if (!ctx.session) throw Error('Session not found');
 
         await ctx.prisma.accessToken.updateMany({
-          where: {
-            sessionId: ctx.session.id,
-            expiresAt: { gte: new Date() },
-          },
+          where: { sessionId: ctx.session.id, expiresAt: { gte: new Date() } },
           data: { expiresAt: new Date() },
         });
         await ctx.prisma.refreshToken.updateMany({
-          where: {
-            sessionId: ctx.session.id,
-            expiresAt: { gte: new Date() },
-          },
+          where: { sessionId: ctx.session.id, expiresAt: { gte: new Date() } },
           data: { expiresAt: new Date() },
         });
 
@@ -83,49 +77,39 @@ export const SessionMutation = extendType({
       async resolve(_root, args, ctx) {
         const p = await getProvider(ctx, args);
         const { provider, clientId, clientSecret, config } = p;
+        const { token, user, check } = provider;
 
         // Assemble and validate access token params
-        const [tokenUrl, tokenParams] = makeProviderUrl(
-          provider.token.url,
-          () => {
-            const params = provider.token.params
-              ? provider.token.params({
-                  callbackParams: { code: args.code, pkce: args.pkce },
-                })
-              : {};
+        const [tokenUrl, tokenParams] = makeProviderUrl(token.url, () => {
+          const params = token.params
+            ? token.params({
+                callbackParams: { code: args.code, pkce: args.pkce },
+              })
+            : {};
 
-            params['client_id'] = clientId;
-            params['client_secret'] = clientSecret;
-            params['redirect_uri'] = args.redirectUri;
-            params['code'] = args.code;
-            params['grant_type'] = 'authorization_code';
+          params['client_id'] = clientId;
+          params['client_secret'] = clientSecret;
+          params['redirect_uri'] = args.redirectUri;
+          params['code'] = args.code;
+          params['grant_type'] = 'authorization_code';
 
-            if (
-              provider.check === Check.STATE ||
-              provider.check === Check.BOTH
-            ) {
-              if (!args.state || !args.expectedState)
-                throw Error(
-                  `Provider ${provider.name} requires both state and expectedState to be set`,
-                );
-              if (args.expectedState !== args.state)
-                throw Error('State mismatch');
-            }
+          if (check === Check.STATE || check === Check.BOTH) {
+            if (!args.state || !args.expectedState)
+              throw Error(
+                `Provider ${provider.name} requires both state and expectedState to be set`,
+              );
+            if (args.expectedState !== args.state)
+              throw Error('State mismatch');
+          }
 
-            if (
-              provider.check === Check.PKCE ||
-              provider.check === Check.BOTH
-            ) {
-              if (!args.pkce)
-                throw Error(
-                  `Provider ${provider.name} requires pkce to be set`,
-                );
-              params['code_verifier'] = args.pkce;
-            }
+          if (check === Check.PKCE || check === Check.BOTH) {
+            if (!args.pkce)
+              throw Error(`Provider ${provider.name} requires pkce to be set`);
+            params['code_verifier'] = args.pkce;
+          }
 
-            return params;
-          },
-        );
+          return params;
+        });
 
         // Create access token
         let tokenResponse: AxiosResponse;
@@ -152,10 +136,8 @@ export const SessionMutation = extendType({
         else tokenData = await tokenResponse.data;
 
         // Assemble and validate access user data params
-        const [userUrl, userParams] = makeProviderUrl(provider.user.url, () => {
-          const params = provider.user.params
-            ? provider.user.params({ token: tokenData })
-            : {};
+        const [userUrl, userParams] = makeProviderUrl(user.url, () => {
+          const params = user.params ? user.params({ token: tokenData }) : {};
 
           params['access_token'] = tokenData.access_token;
           return params;

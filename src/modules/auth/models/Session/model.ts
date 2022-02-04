@@ -20,6 +20,7 @@ export const SessionModel = objectType({
           })
           .accessTokens();
         if (tokens.length === 0) return null;
+        // TODO is the first token always the most recent one?
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         else return tokens[0]!;
       },
@@ -33,6 +34,7 @@ export const SessionModel = objectType({
           })
           .refreshTokens();
         if (tokens.length === 0) return null;
+        // TODO is the first token always the most recent one?
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         else return tokens[0]!;
       },
